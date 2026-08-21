@@ -1,0 +1,5 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Task4.Web/Task4.Web.csproj" />
+  </Folder>
+</Solution>
