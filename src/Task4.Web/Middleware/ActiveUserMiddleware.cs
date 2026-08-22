@@ -3,15 +3,8 @@ using Task4.Web.Models;
 
 namespace Task4.Web.Middleware;
 
-// Login/registratsiyadan tashqari har bir so'rovda tekshiradi: signed-in
-// foydalanuvchi hali ham mavjudmi va bloklanmaganmi. Aks holda uning
-// autentifikatsiya cookie'si cookie muddati tugagunicha amal qilib
-// qoladi — bu esa bloklangan/o'chirilgan foydalanuvchiga ilovadan
-// foydalanishni davom ettirish imkonini beradi.
 public class ActiveUserMiddleware(RequestDelegate next)
 {
-    // Foydalanuvchi signOut qilinayotganda ham yeta olishi kerak bo'lgan
-    // yo'llar — aks holda pastdagi redirect cheksiz aylanaga aylanadi.
     private static readonly string[] AllowedAnonymousPathPrefixes =
     [
         "/account/login",
@@ -40,8 +33,6 @@ public class ActiveUserMiddleware(RequestDelegate next)
         {
             var user = await userManager.GetUserAsync(context.User);
 
-            // user null bo'lsa — hisob cookie berilgandan keyin o'chirilgan;
-            // Blocked bo'lsa — boshqa taqiqlangan holat.
             if (user is null || user.Status == UserStatus.Blocked)
             {
                 await signInManager.SignOutAsync();

@@ -22,7 +22,15 @@ public class UsersController(
     public async Task<IActionResult> Block(
         IEnumerable<string> selectedUserIds)
     {
-        await userManagementService.BlockUsersAsync(selectedUserIds);
+        var ids = selectedUserIds?.ToList() ?? [];
+
+        if (ids.Count == 0)
+        {
+            TempData["Error"] = "No users were selected.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        await userManagementService.BlockUsersAsync(ids);
 
         TempData["Success"] = "Selected users have been blocked.";
 
@@ -34,7 +42,15 @@ public class UsersController(
     public async Task<IActionResult> Unblock(
         IEnumerable<string> selectedUserIds)
     {
-        await userManagementService.UnblockUsersAsync(selectedUserIds);
+        var ids = selectedUserIds?.ToList() ?? [];
+
+        if (ids.Count == 0)
+        {
+            TempData["Error"] = "No users were selected.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        await userManagementService.UnblockUsersAsync(ids);
 
         TempData["Success"] = "Selected users have been unblocked.";
 
@@ -46,7 +62,15 @@ public class UsersController(
     public async Task<IActionResult> Delete(
         IEnumerable<string> selectedUserIds)
     {
-        await userManagementService.DeleteUsersAsync(selectedUserIds);
+        var ids = selectedUserIds?.ToList() ?? [];
+
+        if (ids.Count == 0)
+        {
+            TempData["Error"] = "No users were selected.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        await userManagementService.DeleteUsersAsync(ids);
 
         TempData["Success"] = "Selected users have been deleted.";
 
