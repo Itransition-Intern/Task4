@@ -12,4 +12,6 @@ WORKDIR /app
 COPY --from=build /app/publish .
 
 ENV ASPNETCORE_ENVIRONMENT=Production
+ENV DOTNET_hostBuilder__reloadConfigOnChange=false
+
 ENTRYPOINT ["dotnet", "Task4.Web.dll"]
