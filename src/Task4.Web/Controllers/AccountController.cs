@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Task4.Web.Data;
 using Task4.Web.Models;
 using Task4.Web.Services;
 
@@ -8,7 +9,8 @@ namespace Task4.Web.Controllers;
 public class AccountController(
     UserManager<ApplicationUser> userManager,
     SignInManager<ApplicationUser> signInManager,
-    EmailQueue emailQueue)
+    EmailQueue emailQueue,
+    ApplicationDbContext dbContext)
     : Controller
 {
     [HttpGet]
@@ -156,6 +158,7 @@ public class AccountController(
             isPersistent: false,
             lockoutOnFailure: false);
 
+        // Faqat muvaffaqiyatli signInda activity yoziladi va vaqt yangilanadi.
         if (!result.Succeeded)
         {
             ModelState.AddModelError(
@@ -165,10 +168,20 @@ public class AccountController(
             return View();
         }
 
-        user.LastLoginTime = DateTime.UtcNow;
-        user.LastActionTime = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
+
+        user.LastLoginTime = now;
+        user.LastActionTime = now;
+
+        dbContext.UserActivities.Add(new UserActivity
+        {
+            UserId = user.Id,
+            OccurredAt = now,
+            ActivityType = UserActivityType.Login
+        });
 
         await userManager.UpdateAsync(user);
+        await dbContext.SaveChangesAsync();
 
         return LocalRedirect(
             returnUrl ?? Url.Action("Index", "Users")!);
@@ -178,6 +191,22 @@ public class AccountController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
+        var user = await userManager.GetUserAsync(User);
+
+        if (user is not null)
+        {
+            user.LastActionTime = DateTime.UtcNow;
+
+            dbContext.UserActivities.Add(new UserActivity
+            {
+                UserId = user.Id,
+                OccurredAt = DateTime.UtcNow,
+                ActivityType = UserActivityType.Logout
+            });
+
+            await dbContext.SaveChangesAsync();
+        }
+
         await signInManager.SignOutAsync();
 
         return RedirectToAction(nameof(Login));
