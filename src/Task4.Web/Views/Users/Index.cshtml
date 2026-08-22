@@ -37,44 +37,69 @@
 
             <div class="card-header bg-body">
 
-                <div class="d-flex flex-wrap gap-2">
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
 
-                    <button
-                        type="submit"
-                        formaction="@Url.Action("Block", "Users")"
-                        class="btn btn-warning"
-                        id="blockButton"
-                        disabled>
-                        Block
-                    </button>
+                    <!--
+                        Faqat "Block" matnli tugma. Unblock / Delete /
+                        Delete unverified — ikonka, har biri Bootstrap
+                        tooltip bilan.
+                    -->
+                    <div class="d-flex flex-wrap gap-2">
 
-                    <button
-                        type="submit"
-                        formaction="@Url.Action("Unblock", "Users")"
-                        class="btn btn-outline-secondary"
-                        id="unblockButton"
-                        disabled
-                        title="Unblock selected users">
-                        Unblock
-                    </button>
+                        <button
+                            type="submit"
+                            formaction="@Url.Action("Block", "Users")"
+                            class="btn btn-warning"
+                            id="blockButton"
+                            disabled>
+                            <i class="bi bi-lock-fill" aria-hidden="true"></i>
+                            Block
+                        </button>
 
-                    <button
-                        type="submit"
-                        formaction="@Url.Action("Delete", "Users")"
-                        class="btn btn-outline-danger"
-                        id="deleteButton"
-                        disabled
-                        title="Delete selected users">
-                        Delete
-                    </button>
+                        <button
+                            type="submit"
+                            formaction="@Url.Action("Unblock", "Users")"
+                            class="btn btn-outline-secondary"
+                            id="unblockButton"
+                            disabled
+                            data-bs-toggle="tooltip"
+                            data-bs-title="Unblock selected users"
+                            aria-label="Unblock selected users">
+                            <i class="bi bi-unlock-fill" aria-hidden="true"></i>
+                        </button>
 
-                    <button
-                        type="submit"
-                        formaction="@Url.Action("DeleteUnverified", "Users")"
-                        class="btn btn-outline-danger"
-                        title="Delete all unverified users">
-                        Delete unverified
-                    </button>
+                        <button
+                            type="submit"
+                            formaction="@Url.Action("Delete", "Users")"
+                            class="btn btn-outline-danger"
+                            id="deleteButton"
+                            disabled
+                            data-bs-toggle="tooltip"
+                            data-bs-title="Delete selected users"
+                            aria-label="Delete selected users">
+                            <i class="bi bi-trash-fill" aria-hidden="true"></i>
+                        </button>
+
+                        <button
+                            type="submit"
+                            formaction="@Url.Action("DeleteUnverified", "Users")"
+                            class="btn btn-outline-danger"
+                            data-bs-toggle="tooltip"
+                            data-bs-title="Delete all unverified users"
+                            aria-label="Delete all unverified users">
+                            <i class="bi bi-person-x-fill" aria-hidden="true"></i>
+                        </button>
+
+                    </div>
+
+                    <div class="ms-auto" style="min-width: 220px;">
+                        <input
+                            type="search"
+                            id="filterInput"
+                            class="form-control form-control-sm"
+                            placeholder="Filter by name or e-mail"
+                            aria-label="Filter users">
+                    </div>
 
                 </div>
 
@@ -114,7 +139,7 @@
 
                     @foreach (var user in Model)
                     {
-                        <tr>
+                        <tr class="user-row" data-filter-text="@($"{user.Name} {user.Email}".ToLowerInvariant())">
 
                             <td class="text-center">
                                 <input
@@ -232,5 +257,27 @@
         });
 
         updateToolbar();
+
+        // Haqiqiy Bootstrap tooltip (title atributi emas)
+        document
+            .querySelectorAll('[data-bs-toggle="tooltip"]')
+            .forEach(el => new bootstrap.Tooltip(el));
+
+        // Client-side filter — faqat ko'rinishni yashiradi, ma'lumotni o'zgartirmaydi
+        const filterInput =
+            document.getElementById("filterInput");
+
+        filterInput.addEventListener("input", () => {
+
+            const term = filterInput.value.trim().toLowerCase();
+
+            document.querySelectorAll(".user-row").forEach(row => {
+
+                const matches =
+                    row.dataset.filterText.includes(term);
+
+                row.classList.toggle("d-none", !matches);
+            });
+        });
     </script>
 }
