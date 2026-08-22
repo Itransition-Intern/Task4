@@ -1,0 +1,236 @@
+@model IReadOnlyList<Task4.Web.Models.ApplicationUser>
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="container-fluid py-4">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">User management</h1>
+            <p class="text-body-secondary mb-0">
+                Manage registered users and their account status.
+            </p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] is string success)
+    {
+        <div class="alert alert-success" role="alert">
+            @success
+        </div>
+    }
+
+    @if (TempData["Error"] is string error)
+    {
+        <div class="alert alert-danger" role="alert">
+            @error
+        </div>
+    }
+
+    <form method="post">
+
+        @Html.AntiForgeryToken()
+
+        <div class="card shadow-sm">
+
+            <div class="card-header bg-body">
+
+                <div class="d-flex flex-wrap gap-2">
+
+                    <button
+                        type="submit"
+                        formaction="@Url.Action("Block", "Users")"
+                        class="btn btn-warning"
+                        id="blockButton"
+                        disabled>
+                        Block
+                    </button>
+
+                    <button
+                        type="submit"
+                        formaction="@Url.Action("Unblock", "Users")"
+                        class="btn btn-outline-secondary"
+                        id="unblockButton"
+                        disabled
+                        title="Unblock selected users">
+                        Unblock
+                    </button>
+
+                    <button
+                        type="submit"
+                        formaction="@Url.Action("Delete", "Users")"
+                        class="btn btn-outline-danger"
+                        id="deleteButton"
+                        disabled
+                        title="Delete selected users">
+                        Delete
+                    </button>
+
+                    <button
+                        type="submit"
+                        formaction="@Url.Action("DeleteUnverified", "Users")"
+                        class="btn btn-outline-danger"
+                        title="Delete all unverified users">
+                        Delete unverified
+                    </button>
+
+                </div>
+
+            </div>
+
+            <div class="table-responsive">
+
+                <table class="table table-hover align-middle mb-0">
+
+                    <thead>
+                        <tr>
+
+                            <th scope="col" class="text-center">
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input"
+                                    id="selectAll"
+                                    aria-label="Select all users">
+                            </th>
+
+                            <th scope="col">Name</th>
+
+                            <th scope="col">E-mail</th>
+
+                            <th scope="col">Registration</th>
+
+                            <th scope="col">Last login</th>
+
+                            <th scope="col">Last action</th>
+
+                            <th scope="col">Status</th>
+
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    @foreach (var user in Model)
+                    {
+                        <tr>
+
+                            <td class="text-center">
+                                <input
+                                    type="checkbox"
+                                    class="form-check-input user-checkbox"
+                                    name="selectedUserIds"
+                                    value="@user.Id"
+                                    aria-label="Select @user.Name">
+                            </td>
+
+                            <td>
+                                <span class="fw-medium">
+                                    @user.Name
+                                </span>
+                            </td>
+
+                            <td>
+                                @user.Email
+                            </td>
+
+                            <td>
+                                @user.RegistrationTime.ToLocalTime()
+                            </td>
+
+                            <td>
+                                @(user.LastLoginTime?.ToLocalTime().ToString()
+                                    ?? "Never")
+                            </td>
+
+                            <td>
+                                @(user.LastActionTime?.ToLocalTime().ToString()
+                                    ?? "Never")
+                            </td>
+
+                            <td>
+                                <span class="badge text-bg-secondary">
+                                    @user.Status
+                                </span>
+                            </td>
+
+                        </tr>
+                    }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+@section Scripts
+{
+    <script>
+        const selectAll =
+            document.getElementById("selectAll");
+
+        const checkboxes =
+            document.querySelectorAll(".user-checkbox");
+
+        const blockButton =
+            document.getElementById("blockButton");
+
+        const unblockButton =
+            document.getElementById("unblockButton");
+
+        const deleteButton =
+            document.getElementById("deleteButton");
+
+        function updateToolbar() {
+            const selected =
+                document.querySelectorAll(
+                    ".user-checkbox:checked"
+                ).length;
+
+            const hasSelection = selected > 0;
+
+            blockButton.disabled = !hasSelection;
+            unblockButton.disabled = !hasSelection;
+            deleteButton.disabled = !hasSelection;
+        }
+
+        selectAll.addEventListener("change", () => {
+
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+            });
+
+            updateToolbar();
+        });
+
+        checkboxes.forEach(checkbox => {
+
+            checkbox.addEventListener("change", () => {
+
+                const checkedCount =
+                    document.querySelectorAll(
+                        ".user-checkbox:checked"
+                    ).length;
+
+                selectAll.checked =
+                    checkedCount === checkboxes.length;
+
+                selectAll.indeterminate =
+                    checkedCount > 0 &&
+                    checkedCount < checkboxes.length;
+
+                updateToolbar();
+            });
+
+        });
+
+        updateToolbar();
+    </script>
+}

@@ -17,6 +17,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddSingleton<EmailQueue>();
 builder.Services.AddHostedService<EmailBackgroundService>();
 builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
 
 builder.Services.AddResend(options =>
 {
