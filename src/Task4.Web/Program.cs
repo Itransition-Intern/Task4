@@ -1,4 +1,5 @@
-using Microsoft.AspNetCore.Identity;
+using Resend;
+using Task4.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Task4.Web.Data;
 using Task4.Web.Models;
@@ -12,6 +13,20 @@ var connectionString =
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString));
+
+builder.Services.AddSingleton<EmailQueue>();
+builder.Services.AddHostedService<EmailBackgroundService>();
+builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
+
+builder.Services.AddResend(options =>
+{
+    options.ApiToken =
+        builder.Configuration["Resend:ApiKey"]
+        ?? throw new InvalidOperationException(
+            "Resend API key is not configured.");
+});
+
+builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
 
 builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>
