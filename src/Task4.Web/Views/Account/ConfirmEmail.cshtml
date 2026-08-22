@@ -1,0 +1,15 @@
+@{
+    ViewData["Title"] = "Email confirmed";
+}
+
+<div class="container py-5">
+    <div class="alert alert-success">
+        Your email has been successfully confirmed.
+    </div>
+
+    <a asp-controller="Account"
+       asp-action="Login"
+       class="btn btn-primary">
+        Go to login
+    </a>
+</div>
