@@ -1,10 +1,11 @@
-using Resend;
 using Task4.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Task4.Web.Data;
 using Task4.Web.Models;
 using Task4.Web.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,18 +22,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSingleton<EmailQueue>();
 builder.Services.AddHostedService<EmailBackgroundService>();
-builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
-
-builder.Services.AddResend(options =>
-{
-    options.ApiToken =
-        builder.Configuration["Resend:ApiKey"]
-        ?? throw new InvalidOperationException(
-            "Resend API key is not configured.");
-});
-
-builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>
@@ -83,6 +74,31 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<ActiveUserMiddleware>();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var userManager =
+            context.RequestServices
+                .GetRequiredService<UserManager<ApplicationUser>>();
+
+        var user =
+            await userManager.GetUserAsync(context.User);
+
+        if (user is null || user.Status == UserStatus.Blocked)
+        {
+            await context.SignOutAsync(
+                IdentityConstants.ApplicationScheme);
+
+            context.Response.Redirect("/Account/Login");
+
+            return;
+        }
+    }
+
+    await next();
+});
 
 app.MapControllerRoute(
     name: "default",

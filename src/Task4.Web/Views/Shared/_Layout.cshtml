@@ -20,20 +20,40 @@
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                        @if (User.Identity?.IsAuthenticated == true)
-                        {
+                    @{
+                        var currentController =
+                            ViewContext.RouteData.Values["controller"] as string;
+
+                        // Login/Register (AccountController) sahifalarida
+                        // Home/Privacy havolalari ko'rsatilmaydi — faqat
+                        // logo qoladi.
+                        var isAccountPage =
+                            string.Equals(
+                                currentController,
+                                "Account",
+                                StringComparison.OrdinalIgnoreCase);
+                    }
+                    @if (!isAccountPage)
+                    {
+                        <ul class="navbar-nav flex-grow-1">
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a>
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                             </li>
-                        }
-                    </ul>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+                            </li>
+                            @if (User.Identity?.IsAuthenticated == true)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link text-dark" asp-area="" asp-controller="Users" asp-action="Index">Users</a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul class="navbar-nav flex-grow-1"></ul>
+                    }
                     @if (User.Identity?.IsAuthenticated == true)
                     {
                         <ul class="navbar-nav">

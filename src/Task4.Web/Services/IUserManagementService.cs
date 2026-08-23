@@ -13,4 +13,7 @@ public interface IUserManagementService
     Task DeleteUsersAsync(IEnumerable<string> userIds);
 
     Task DeleteUnverifiedUsersAsync();
+
+    Task<IReadOnlyDictionary<string, int[]>> GetActivitySummaryAsync(
+        IEnumerable<string> userIds);
 }
