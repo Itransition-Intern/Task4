@@ -5,6 +5,8 @@ using Task4.Web.Data;
 using Task4.Web.Models;
 using Task4.Web.Middleware;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +85,31 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseMiddleware<ActiveUserMiddleware>();
 app.UseAuthorization();
+
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true)
+    {
+        var userManager =
+            context.RequestServices
+                .GetRequiredService<UserManager<ApplicationUser>>();
+
+        var user =
+            await userManager.GetUserAsync(context.User);
+
+        if (user is null || user.Status == UserStatus.Blocked)
+        {
+            await context.SignOutAsync(
+                IdentityConstants.ApplicationScheme);
+
+            context.Response.Redirect("/Account/Login");
+
+            return;
+        }
+    }
+
+    await next();
+});
 
 app.MapControllerRoute(
     name: "default",
