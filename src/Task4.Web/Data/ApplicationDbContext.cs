@@ -16,6 +16,9 @@ public class ApplicationDbContext(
 
         builder.Entity<ApplicationUser>(entity =>
         {
+            entity.Property(x => x.Email)
+                .HasColumnType("citext");
+
             entity.HasIndex(x => x.Email)
                 .IsUnique();
 

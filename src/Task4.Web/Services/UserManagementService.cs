@@ -61,9 +61,6 @@ public class UserManagementService(
     {
         var users = await GetUsersByIdsAsync(userIds);
 
-        // Activity yozuvi qo'shilmaydi: foydalanuvchi shu yerda o'chiriladi,
-        // shuning uchun UserId FK'ga ega bo'lgan yozuv saqlab bo'lmaydi
-        // (va u baribir cascade orqali o'chib ketardi).
         foreach (var user in users)
         {
             await userManager.DeleteAsync(user);
@@ -90,5 +87,43 @@ public class UserManagementService(
         return await userManager.Users
             .Where(x => ids.Contains(x.Id))
             .ToListAsync();
+    }
+
+    public async Task<IReadOnlyDictionary<string, int[]>> GetActivitySummaryAsync(
+        IEnumerable<string> userIds)
+    {
+        var ids = userIds.ToList();
+
+        var today = DateTime.UtcNow.Date;
+        var startDate = today.AddDays(-6);
+
+        var activities = await dbContext.UserActivities
+            .Where(x =>
+                ids.Contains(x.UserId) &&
+                x.OccurredAt >= startDate)
+            .ToListAsync();
+
+        var result = new Dictionary<string, int[]>();
+
+        foreach (var userId in ids)
+        {
+            var dailyActivity = new int[7];
+
+            foreach (var activity in activities
+                        .Where(x => x.UserId == userId))
+            {
+                var dayIndex =
+                    (activity.OccurredAt.Date - startDate).Days;
+
+                if (dayIndex >= 0 && dayIndex < 7)
+                {
+                    dailyActivity[dayIndex]++;
+                }
+            }
+
+            result[userId] = dailyActivity;
+        }
+
+        return result;
     }
 }

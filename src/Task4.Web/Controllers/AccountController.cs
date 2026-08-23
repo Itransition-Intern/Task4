@@ -72,7 +72,7 @@ public class AccountController(
                 user.Email!,
                 confirmationUrl!));
 
-        // Console.WriteLine($"CONFIRMATION URL: {confirmationUrl}");
+        Console.WriteLine($"CONFIRMATION URL: {confirmationUrl}");
 
         return RedirectToAction(nameof(RegisterSuccess));
     }

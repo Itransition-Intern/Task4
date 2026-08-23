@@ -14,6 +14,12 @@ public class UsersController(
     {
         var users = await userManagementService.GetUsersAsync();
 
+        var activitySummary =
+            await userManagementService.GetActivitySummaryAsync(
+                users.Select(x => x.Id));
+
+        ViewBag.ActivitySummary = activitySummary;
+
         return View(users);
     }
 
