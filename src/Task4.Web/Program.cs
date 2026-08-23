@@ -1,4 +1,3 @@
-using Resend;
 using Task4.Web.Services;
 using Microsoft.EntityFrameworkCore;
 using Task4.Web.Data;
@@ -23,18 +22,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 builder.Services.AddSingleton<EmailQueue>();
 builder.Services.AddHostedService<EmailBackgroundService>();
-builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
 builder.Services.AddScoped<IUserManagementService, UserManagementService>();
-
-builder.Services.AddResend(options =>
-{
-    options.ApiToken =
-        builder.Configuration["Resend:ApiKey"]
-        ?? throw new InvalidOperationException(
-            "Resend API key is not configured.");
-});
-
-builder.Services.AddScoped<IEmailSender, ResendEmailSender>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 builder.Services
     .AddDefaultIdentity<ApplicationUser>(options =>
